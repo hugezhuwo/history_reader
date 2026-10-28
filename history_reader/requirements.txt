@@ -1,0 +1,2 @@
+pymupdf==1.26.5
+pypinyin==0.55.0

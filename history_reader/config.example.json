@@ -1,0 +1,7 @@
+{
+  "HISTORY_READER_BOOK_DIR": "books",
+  "HISTORY_READER_DATA_DIR": "data",
+  "HISTORY_READER_CACHE_DIR": ".local/cache",
+  "LOCAL_MODEL_PATH": "models/local",
+  "PORT": 8765
+}

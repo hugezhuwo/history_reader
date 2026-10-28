@@ -1,0 +1,43 @@
+# Local settings and credentials
+config.json
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+# Documents and every extracted/derived reading artifact
+*.pdf
+*.epub
+*.mobi
+*.azw*
+*.png
+*.jpg
+*.jpeg
+*.webp
+books/*
+!books/README.md
+.local/
+cache/
+backup*/
+# External assets: download directly from their owners
+data/*
+!data/README.md
+models/*
+!models/README.md
+model/
+model-3b/
+*.safetensors
+*.gguf
+*.bin
+.hf/
+.cache/
+# Environments and tooling
+.venv/
+.model-venv/
+venv/
+__pycache__/
+*.py[cod]
+.DS_Store
+*.log
+.coverage
+dist/

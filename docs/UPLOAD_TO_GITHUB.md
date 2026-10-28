@@ -77,3 +77,7 @@ git push
 ```
 
 每次提交前都检查文件列表。`git add .` 会遵守 .gitignore，但已经被跟踪的文件不受新增忽略规则影响。
+
+## 如需让 Codex 继续提交修改
+
+已有 GitHub 连接时，在「插件设置 → GitHub → GitHub」找到「代码仓库访问权限」，点击右侧「在 GitHub 上配置」，将目标仓库加入访问范围并保存。不要先断开重连。详见 [仓库授权教程](GITHUB_AUTHORIZATION.md)。

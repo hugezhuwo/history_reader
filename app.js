@@ -39,7 +39,7 @@ async function allQuotes(){
  if(!pageData)return;
  const token=++generation;$('#cards').replaceChildren();
  const phrases=pageData.candidates;
- $('#status').textContent=pageData.text.trim()?phrases.length?`本页 ${phrases.length} 段引文 · 逐段机翻（短引文也包含）`:'本页未检测到成对引号，可点击正文段落翻译。':'本页无文本层，暂不分析。';
+ $('#status').textContent=pageData.text.trim()?phrases.length?`本页 ${phrases.length} 段引文 · 逐段机翻（短引文也包含）`:'本页未检测到需要翻译的引文。':'本页无文本层，暂不分析。';
  // Show every quote immediately so the user can see pending items.
  const jobs=phrases.map(text=>makeCard(text,pageData.page,token));
  for(const job of jobs){if(token!==generation)return;await job()}
@@ -58,12 +58,14 @@ function createPage(d){
  const sheet=el('article','pdf-page');sheet.dataset.page=d.page;sheet.setAttribute('aria-label','PDF 第 '+d.page+' 页');
  const paper=el('div','paper');paper.style.aspectRatio=d.width+'/'+d.height;
  const image=el('img','scan');image.alt='PDF 第 '+d.page+' 页原文';image.src='/api/image?n='+d.page+'&book='+encodeURIComponent(d.book_id)+'&width='+imagePixels();image.width=d.width;image.height=d.height;image.draggable=false;
- const overlay=el('div','overlay');
- for(const b of d.blocks){
-  const btn=el('button','block');btn.title='点击翻译这一段';btn.setAttribute('aria-label',b.text.slice(0,40));const[x,y,w,h]=b.box;
-  Object.assign(btn.style,{left:x*100+'%',top:y*100+'%',width:w*100+'%',height:h*100+'%'});
-  btn.onclick=()=>{activatePage(d);const t=++generation;document.querySelectorAll('.selected').forEach(e=>e.classList.remove('selected'));btn.classList.add('selected');setSidebarCollapsed(false);showTab('translation');$('#cards').replaceChildren();$('#status').textContent='PDF 第 '+d.page+' 页 · 所选段落';makeCard(b.text,d.page,t)();load(d.page,false)};
-  overlay.append(btn);
+ const overlay=el('div','text-layer');overlay.setAttribute('aria-label','PDF 可选择文本');
+ const measure=document.createElement('canvas').getContext('2d');
+ for(const line of d.lines||[]){
+  const text=el('div','text-line',line.text),[x,y,w,h]=line.box;
+  measure.font='100px "Songti SC", "PingFang SC", serif';
+  const natural=measure.measureText(line.text).width*line.size/100;
+  Object.assign(text.style,{left:x*100+'%',top:y*100+'%',fontSize:line.size*100+'cqw',height:h*100+'%',transform:`scaleX(${natural?w/natural:1})`});
+  overlay.append(text);
  }
  paper.append(image,overlay);sheet.append(paper);return {node:sheet,data:d};
 }
@@ -98,6 +100,8 @@ async function load(n,jump=true){
 }
 function scrollFocus(){
  if(adjustingScroll||!rendered.size)return;
+ const selection=window.getSelection();
+ if(selection&&!selection.isCollapsed&&$('#reader').contains(selection.anchorNode))return;
  const reader=$('#reader'),y=reader.getBoundingClientRect().top+Math.min(180,reader.clientHeight*.25);
  let best=null,distance=Infinity;
  for(const p of rendered.values()){
@@ -261,7 +265,7 @@ function renderUnresolved(data){
 function closeMap(){const d=$('#mapDialog');if(d.open)d.close()}
 $('#expandMap').onclick=()=>{const dialog=$('#mapDialog');dialog.append($('#map'));$('#map').hidden=false;dialog.showModal()};
 $('#mapDialog').addEventListener('close',()=>{$('#mapHome').append($('#map'))});$('#closeMap').onclick=closeMap;
-$('#prev').onclick=()=>load(Math.max(1,current-1));$('#next').onclick=()=>{if(pageData)load(Math.min(pageData.total,current+1))};$('#page').onchange=e=>load(Number(e.target.value));$('#allQuotes').onclick=allQuotes;
+$('#prev').onclick=()=>load(Math.max(1,current-1));$('#next').onclick=()=>{if(pageData)load(Math.min(pageData.total,current+1))};$('#page').onchange=e=>load(Number(e.target.value));
 $('#lookup').onclick=()=>{const text=$('#term').value.trim();if(!pageData||!text||!pageData.text.replace(/\n/g,'').includes(text)){$('#termResult').textContent='请输入当前页中实际出现的字词。';return}lookup(text,pageData.page,$('#termResult'),$('#lookup'))};
 $('#term').onkeydown=e=>{if(e.key==='Enter')$('#lookup').click()};
 async function switchBook(identity){

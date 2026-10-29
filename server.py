@@ -35,7 +35,14 @@ def page_data(n,identity=None):
   if not 1<=n<=len(d):raise ValueError('页码无效')
   p=d[n-1];w,h=p.rect.width,p.rect.height
   blocks=[dict(id=i,text=b[4].strip(),box=[b[0]/w,b[1]/h,(b[2]-b[0])/w,(b[3]-b[1])/h]) for i,b in enumerate(p.get_text('blocks')) if len(b)>4 and isinstance(b[4],str) and b[4].strip()]
-  return dict(page=n,total=len(d),width=w,height=h,blocks=blocks,text=p.get_text(),book=path.name,book_id=book_id(path),book_title=re.split('[（(]',path.stem)[0])
+  lines=[]
+  for block in p.get_text('dict')['blocks']:
+   for line in block.get('lines',[]):
+    spans=line.get('spans',[])
+    if not spans:continue
+    x,y,x1,y1=line['bbox']
+    lines.append(dict(text=''.join(v['text'] for v in spans),box=[x/w,y/h,(x1-x)/w,(y1-y)/h],size=spans[0]['size']/w))
+  return dict(page=n,total=len(d),width=w,height=h,blocks=blocks,lines=lines,text=p.get_text(),book=path.name,book_id=book_id(path),book_title=re.split('[（(]',path.stem)[0])
 def candidates(t,previous='',following=''):
  # Track nested quotation marks across page boundaries; only return visible text.
  previous=previous.replace('\n','');t=t.replace('\n','');following=following.replace('\n','')

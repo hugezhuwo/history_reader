@@ -39,6 +39,14 @@ class ReaderTests(unittest.TestCase):
   for page in [0,2]:
    with self.assertRaises(ValueError):server.page_data(page,books[0]['id'])
   with self.assertRaises(ValueError):server.book_path('../private.pdf')
+ def test_selectable_text_lines(self):
+  book=server.book_catalog()['books'][0]['id'];page=server.page_data(1,book)
+  self.assertTrue(page['lines'])
+  self.assertEqual(''.join(x['text'] for x in page['lines']),page['text'].replace('\n',''))
+  for line in page['lines']:
+   self.assertGreater(line['size'],0)
+   self.assertEqual(len(line['box']),4)
+   self.assertTrue(all(0<=v<=1 for v in line['box']))
  def test_quotes(self):
   self.assertEqual(len(server.candidates(''.join('“短句%d”'%i for i in range(12)))),12)
   self.assertEqual(server.candidates('「外层『内层』」'),['外层『内层』'])
